@@ -1,0 +1,15 @@
+{
+  "name": "openai_subtitle_translator",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Translate SRT files using ChatGPT while keeping context",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "dependencies": {
+    "openai": "^3.2.1",
+    "subtitle": "^4.2.1"
+  }
+}
