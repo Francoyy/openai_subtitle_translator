@@ -13,7 +13,7 @@ const openai = new OpenAIApi(configuration);
 * Resolves a promise with a given timeout. If the timeout is reached before the promise
 * resolves, the Promise gets rejected.
 */
-const callWithTimeout = async (promise, timeLimit) => {
+function callWithTimeout(promise, timeLimit) {
     const timeoutPromise = new Promise((_, reject) => {
         setTimeout(reject, timeLimit);
     });
@@ -24,7 +24,7 @@ const callWithTimeout = async (promise, timeLimit) => {
 * Completes a chat gpt request. Even if the request times out, it'll retry automatically
 * and eventually return the result.
 */
-function createChatCompletionWithRetries(msgToGpt) {
+async function createChatCompletionWithRetries(msgToGpt) {
   let result;
   while (!result) {
     try {
@@ -39,7 +39,7 @@ function createChatCompletionWithRetries(msgToGpt) {
 /**
 * Translates an array of subtitles in-place. The data is added to subtitles[i].data.text.
 */
-function translateInPlace(subtitles) {
+async function translateInPlace(subtitles) {
   // TODO: fix the starting data.
   let previous, current = subtitles[0].data.text, next = subtitles[1].data.text;
   for (let i = 0; i < subtitles.length; i++) {
@@ -71,7 +71,7 @@ function translateInPlace(subtitles) {
     };
     
     const completion = await createChatCompletionWithRetries(msgToGpt);
-    let result = completion.data.choices[0].message.content;
+    const result = completion.data.choices[0].message.content;
     subtitles[i].data.text = `${result}\n${input}`
     console.log(`-----------------`)
     console.log(`${i + 1} / ${subtitles.length}`)
@@ -81,17 +81,20 @@ function translateInPlace(subtitles) {
   return subtitles;
 }
 
-const subtitleFiles = fs.readdirSync('./src');
-const supportExtensions = ['srt', 'vtt'];
-for (let subtitleFile of subtitleFiles) {
-  if (!supportExtensions.includes(subtitleFile.split('.').pop())) continue
-  const subtitles = fs.readFileSync(`./src/${subtitleFile}`, 'utf8')
-  subtitles = parseSync(subtitle)
-  subtitles = subtitles.filter(line => line.type === 'cue')
-
-  translateInPlace(subtitles);
+async function translateSubtitles(folder) {
+  const subtitleFiles = fs.readdirSync(folder);
+  const supportExtensions = ['srt', 'vtt'];
+  for (let subtitleFile of subtitleFiles) {
+    if (!supportExtensions.includes(subtitleFile.split('.').pop())) continue
+    const subtitles = fs.readFileSync(`./src/${subtitleFile}`, 'utf8')
+    subtitles = parseSync(subtitle)
+    subtitles = subtitles.filter(line => line.type === 'cue')
   
-  fs.writeFileSync(`./res/${filename}`, stringifySync(subtitles, { format: 'srt' }))
+    await translateInPlace(subtitles);
+    
+    fs.writeFileSync(`./res/${filename}`, stringifySync(subtitles, { format: 'srt' }))
+    console.log(`Translated ${filename}`);
+  }
 }
 
-
+translateSubtitles('./src').then(() => console.log('Finished translating all files'));
