@@ -24,6 +24,19 @@ const asyncCallWithTimeout = async (asyncPromise, timeLimit) => {
     })
 }
 
+/**
+* Completes a chat. This function is guaranteed to return a result.
+*/
+async function createChatCompletion(msgToGpt) {
+  while (true) {
+    const completion = await asyncCallWithTimeout(openai.createChatCompletion(msgToGpt), 5000);
+    if (completion !== "TIMEOUT") {
+      return completion;
+    }
+    // else, try again.
+  }
+}
+
 let previous = "";
 let input = "";
 let next = "";
@@ -65,7 +78,8 @@ var translateSubtitleLine = async function(i, filename) {
     ]
   }
 
-    const completion = await asyncCallWithTimeout(openai.createChatCompletion(msgToGpt), 5000);
+    const completion = await createChatCompletion(msgToGpt);
+    // TODO: remove if/then/else, since completion will never be TIMEOUT and always have the result.
     if (completion === "TIMEOUT") {
       translateSubtitleLine(i, filename);
     } else {
