@@ -20,15 +20,6 @@ const callWithTimeout = async (promise, timeLimit) => {
     return Promise.race([promise, timeoutPromise]);
 }
 
-let previous = "";
-let input = "";
-let next = "";
-let context = "";
-let subtitle;
-
-let subtitles = fs.readdirSync('./src');
-let supportExtensions = ['srt', 'vtt'];
-
 /**
 * Completes a chat gpt request. Even if the request times out, it'll retry automatically
 * and eventually return the result.
@@ -90,11 +81,13 @@ function translateInPlace(subtitles) {
   return subtitles;
 }
 
-for (let subtitleFile of subtitles) {
+const subtitleFiles = fs.readdirSync('./src');
+const supportExtensions = ['srt', 'vtt'];
+for (let subtitleFile of subtitleFiles) {
   if (!supportExtensions.includes(subtitleFile.split('.').pop())) continue
-  subtitle = fs.readFileSync(`./src/${subtitleFile}`, 'utf8')
-  subtitle = parseSync(subtitle)
-  subtitle = subtitle.filter(line => line.type === 'cue')
+  const subtitles = fs.readFileSync(`./src/${subtitleFile}`, 'utf8')
+  subtitles = parseSync(subtitle)
+  subtitles = subtitles.filter(line => line.type === 'cue')
 
   translateInPlace(subtitles);
   
