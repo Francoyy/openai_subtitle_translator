@@ -4,6 +4,8 @@ import { parseSync, stringifySync } from 'subtitle'
 import {execSync} from 'child_process';
 const config = JSON.parse(fs.readFileSync('./config.json', 'utf8'))
 
+let txtSeparator = config.TARGET_LANGUAGE === "Traditional Chinese" ? " " : "";
+
 const configuration = new Configuration({
   apiKey: config.OPENAI_API_KEY,
 });
@@ -43,13 +45,12 @@ async function createChatCompletionWithRetries(msgToGpt) {
 * Translates an array of subtitles in-place. The data is added to subtitles[i].data.text.
 */
 async function translateInPlace(subtitles) {
-  // TODO: fix the starting data.
-  let previous, current = subtitles[0].data.text, next = subtitles[1].data.text;
+  let previous, current, next;
   for (let i = 0; i < subtitles.length; i++) {
-    previous = current;
-    current = next;
+    current ? previous = current : previous = "";
+    current = subtitles[i].data.text;
     next = subtitles[i + 1].data.text;
-    const context = previous + current + next;
+    const context = previous + txtSeparator + current + txtSeparator + next;
     const msgToGpt = {
       model: "gpt-3.5-turbo",
       messages: [
@@ -71,7 +72,6 @@ async function translateInPlace(subtitles) {
         }
       ]
     };
-    console.log("calling chatgpt");
     const completion = await createChatCompletionWithRetries(msgToGpt);
     const result = completion.data.choices[0].message.content;
     subtitles[i].data.text = `${result}\n${current}`
@@ -99,7 +99,6 @@ async function translateSubtitles(folder) {
     console.log(`Translated ${filename}`);
   }
 }
-
 
 translateSubtitles('./src').then(() => console.log('Finished translating all files'));
 
