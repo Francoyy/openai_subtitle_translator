@@ -71,6 +71,7 @@ async function translateInPlace(subtitles) {
         }
       ]
     };
+    console.log("\nCalling ChatGPT with question " + msgToGpt.messages[3].content)
     const completion = await createChatCompletionWithRetries(msgToGpt);
     const result = completion.data.choices[0].message.content;
     subtitles[i].data.text = `${result}\n${current}`
