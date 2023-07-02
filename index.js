@@ -40,7 +40,6 @@ async function createChatCompletionWithRetries(msgToGpt) {
 }
 
 
-
 /**
 * Translates an array of subtitles in-place. The data is added to subtitles[i].data.text.
 */
