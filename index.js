@@ -14,7 +14,7 @@ const asyncCallWithTimeout = async (asyncPromise, timeLimit) => {
     let timeoutHandle;
     const timeoutPromise = new Promise((_resolve, reject) => {
         timeoutHandle = setTimeout(
-            () => _resolve("TIMEOUT"),
+            () => _resolve(null),
             timeLimit
         );
     });
@@ -66,7 +66,7 @@ var translateSubtitleLine = async function(i, filename) {
   }
 
     const completion = await asyncCallWithTimeout(openai.createChatCompletion(msgToGpt), 5000);
-    if (completion === "TIMEOUT") {
+    if (completion === null) {
       translateSubtitleLine(i, filename);
     } else {
       let result = completion.data.choices[0].message.content;
